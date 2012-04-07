@@ -1,0 +1,151 @@
+@grey: #DDDDDD;
+
+html,body,* {
+	padding: 0;
+	margin: 0;
+	border: 0;
+	outline: none;
+	font-family: inherit;
+}
+
+body {
+	text-align: center;
+}
+
+.cbm {
+	clear: both;
+	font-size: 0;
+	height: 0;
+	line-height: 0;
+}
+
+h1 {
+	font-family: Ubuntu, serif;
+	margin: 0 0 25px 0;
+	border-left: 6px solid #FA8F6F;
+	font-size: 2.5em;
+
+	a {
+		color: black;
+		padding-left: 5px;
+		text-decoration: none;
+	}
+}
+
+h2 {
+	font-family: Neuton, serif;
+	font-size: 1.25em;
+	border-top: 2px solid @grey;
+	color: #7A7A7A;
+	background: #F9F9F9;
+	padding: 7px 10px 6px;
+}
+
+#container {
+	margin: 0 auto;
+	text-align: left;
+	width: 1000px;
+	
+	#hd {	
+		padding-top: 25px;
+
+		#nav {
+			border-top: 1px solid @grey;
+			border-bottom: 1px solid @grey;
+			padding: 10px 0 10px 0;
+
+			span {
+				float: right;
+				font-size: 0.9em;
+				padding-top: 0.4em;
+
+				&.external {
+					padding-top: 0.5em;
+				}
+
+				img {
+					margin-left: 5px;
+					width: 16px;
+					height: 16px;
+				}
+			}
+		}
+	}
+
+	#bd {
+
+		margin: 20px 0;
+		width:100%;
+			
+		#content {
+
+			#score {
+				.team {
+					width: 50%;
+					float: left;
+					
+					h3 {
+						text-align: center;
+					}
+
+					.actions {
+						list-style-type: none;
+
+						li.value {
+								text-align: center;
+								width: 30%;
+								font-size: 7em;
+								font-weight: bold;
+							}
+
+						li {
+							text-align: center;
+							font-size: 3em;
+							float: left;
+							width: 35%;
+
+							a {
+								display: block;
+								width: 100%;
+								font-weight: bold;
+								text-decoration: none;
+								font-size: 2em;
+							
+								&.give {
+									color: white;
+									background: green;
+
+									&:hover {
+										background: white;
+										color: green;
+									}
+								}
+								
+								&.take {
+									color: white;
+									background: red;
+
+									&:hover {
+										background: white;
+										color: red;
+									}
+								}
+							}
+
+						}
+					}
+				}
+			}
+
+			p {
+				margin: 0.5em 0.25em 0.65em 0.25em;
+			}
+		}
+	}
+	#ft {
+		padding-top: 10px;
+		height: 25px;
+		border-top: 1px solid #DDDDDD;
+		font-size: 0.75em;
+	}
+}
