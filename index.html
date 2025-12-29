@@ -1,1 +1,74 @@
-hello!
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ole-Alexander Moy</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- DaisyUI -->
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.6.0/dist/full.min.css" rel="stylesheet" type="text/css" />
+
+    <style>
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center p-4">
+    <div class="max-w-2xl w-full">
+        <!-- Logo -->
+        <div class="flex justify-center mb-8">
+            <svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+                <!-- Outer circle -->
+                <circle cx="60" cy="60" r="58" fill="#ffffff" stroke="#3b82f6" stroke-width="2"/>
+
+                <!-- Inner decorative circle -->
+                <circle cx="60" cy="60" r="50" fill="none" stroke="#3b82f6" stroke-width="1" opacity="0.3"/>
+
+                <!-- Initials OAM -->
+                <text x="60" y="72" font-family="Arial, sans-serif" font-size="32" font-weight="bold"
+                      fill="#3b82f6" text-anchor="middle">OAM</text>
+            </svg>
+        </div>
+
+        <!-- Main Card -->
+        <div class="card bg-base-100 shadow-2xl">
+            <div class="card-body items-center text-center">
+                <h1 class="card-title text-4xl md:text-5xl font-bold mb-2 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                    Ole-Alexander Moy
+                </h1>
+
+                <div class="divider"></div>
+
+                <p class="text-lg text-base-content/70 mb-6 max-w-md">
+                    Welcome to my personal space on the web.
+                    Let's connect and explore opportunities together.
+                </p>
+
+                <!-- Social Links -->
+                <div class="card-actions justify-center flex-wrap gap-4">
+                    <a href="https://linkedin.com/in/olemoy"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       class="btn btn-primary gap-2">
+                        <!-- LinkedIn Icon -->
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+                        </svg>
+                        LinkedIn
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center mt-8 text-base-content/60">
+            <p class="text-sm">© 2025 Ole-Alexander Moy</p>
+        </div>
+    </div>
+</body>
+</html>
