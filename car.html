@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animated Car Illusion</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            overflow: hidden;
+            background: #87CEEB;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Animated background layer */
+        .background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        /* Road stripes animation */
+        .road {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 40%;
+            background: #333;
+            z-index: 2;
+        }
+
+        .road-stripe {
+            position: absolute;
+            bottom: 30%;
+            height: 8px;
+            width: 100px;
+            background: #FFF;
+            opacity: 0.8;
+        }
+
+        /* Cloud layers for parallax effect */
+        .clouds {
+            position: absolute;
+            width: 200%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 3;
+        }
+
+        .cloud {
+            position: absolute;
+            background: white;
+            border-radius: 100px;
+            opacity: 0.7;
+        }
+
+        /* Car container */
+        .car-container {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+            width: 640px;
+            height: auto;
+        }
+
+        .car-image {
+            width: 100%;
+            height: auto;
+            display: block;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Wheel overlays */
+        .wheel {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #666, #222, #000);
+            border: 3px solid #333;
+            z-index: 1;
+        }
+
+        .wheel::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background:
+                linear-gradient(0deg, transparent 45%, #444 45%, #444 55%, transparent 55%),
+                linear-gradient(90deg, transparent 45%, #444 45%, #444 55%, transparent 55%),
+                linear-gradient(45deg, transparent 45%, #555 45%, #555 55%, transparent 55%),
+                linear-gradient(-45deg, transparent 45%, #555 45%, #555 55%, transparent 55%);
+            border-radius: 50%;
+        }
+
+        .wheel::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 30%;
+            height: 30%;
+            background: radial-gradient(circle, #888, #333);
+            border-radius: 50%;
+            border: 2px solid #222;
+        }
+
+        /* Control panel */
+        .controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 8px;
+            color: white;
+        }
+
+        .controls button {
+            padding: 8px 16px;
+            margin: 5px;
+            border: none;
+            border-radius: 4px;
+            background: #4CAF50;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .controls button:hover {
+            background: #45a049;
+        }
+
+        .controls button.pause {
+            background: #f44336;
+        }
+
+        .controls button.pause:hover {
+            background: #da190b;
+        }
+
+        /* Loading state */
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 24px;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="loading" id="loading">Loading car image...</div>
+
+        <!-- Background elements -->
+        <div class="background">
+            <div class="clouds" id="clouds"></div>
+        </div>
+
+        <!-- Road -->
+        <div class="road" id="road"></div>
+
+        <!-- Car with wheels -->
+        <div class="car-container" id="carContainer" style="display: none;">
+            <img src="https://unsplash.com/photos/DyiDM013ARs/download?force=true&w=640"
+                 alt="Car"
+                 class="car-image"
+                 id="carImage"
+                 crossorigin="anonymous">
+            <!-- Wheels will be dynamically positioned -->
+            <div class="wheel" id="wheelFront"></div>
+            <div class="wheel" id="wheelRear"></div>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls">
+            <button id="playPauseBtn">Pause</button>
+            <button id="speedUpBtn">Speed Up</button>
+            <button id="slowDownBtn">Slow Down</button>
+            <div style="margin-top: 10px;">Speed: <span id="speedDisplay">1x</span></div>
+        </div>
+    </div>
+
+    <!-- anime.js v4 -->
+    <script src="https://cdn.jsdelivr.net/npm/animejs@4.0.0-beta.101/lib/anime.es.js" type="module"></script>
+
+    <script type="module">
+        import anime from 'https://cdn.jsdelivr.net/npm/animejs@4.0.0-beta.101/lib/anime.es.js';
+
+        let isPaused = false;
+        let speedMultiplier = 1;
+        let animations = [];
+
+        // Initialize clouds
+        function createClouds() {
+            const cloudsContainer = document.getElementById('clouds');
+            const cloudCount = 8;
+
+            for (let i = 0; i < cloudCount; i++) {
+                const cloud = document.createElement('div');
+                cloud.className = 'cloud';
+                const size = 60 + Math.random() * 80;
+                cloud.style.width = size + 'px';
+                cloud.style.height = size * 0.6 + 'px';
+                cloud.style.left = Math.random() * 200 + '%';
+                cloud.style.top = Math.random() * 40 + '%';
+                cloudsContainer.appendChild(cloud);
+            }
+        }
+
+        // Initialize road stripes
+        function createRoadStripes() {
+            const road = document.getElementById('road');
+            const stripeCount = 15;
+
+            for (let i = 0; i < stripeCount; i++) {
+                const stripe = document.createElement('div');
+                stripe.className = 'road-stripe';
+                stripe.style.left = (i * 150) + 'px';
+                road.appendChild(stripe);
+            }
+        }
+
+        // Position wheels on the car image
+        function positionWheels() {
+            const carContainer = document.getElementById('carContainer');
+            const carImage = document.getElementById('carImage');
+            const wheelFront = document.getElementById('wheelFront');
+            const wheelRear = document.getElementById('wheelRear');
+
+            // Wait for image to load to get proper dimensions
+            if (carImage.complete) {
+                setupWheelPositions();
+            } else {
+                carImage.addEventListener('load', setupWheelPositions);
+            }
+
+            function setupWheelPositions() {
+                const imgWidth = carImage.offsetWidth;
+                const imgHeight = carImage.offsetHeight;
+
+                // Wheel size relative to image height
+                const wheelSize = imgHeight * 0.25;
+
+                // Position wheels (adjust these percentages based on actual car image)
+                // Front wheel (right side)
+                wheelFront.style.width = wheelSize + 'px';
+                wheelFront.style.height = wheelSize + 'px';
+                wheelFront.style.left = (imgWidth * 0.65) + 'px';
+                wheelFront.style.bottom = (imgHeight * 0.15) + 'px';
+
+                // Rear wheel (left side)
+                wheelRear.style.width = wheelSize + 'px';
+                wheelRear.style.height = wheelSize + 'px';
+                wheelRear.style.left = (imgWidth * 0.25) + 'px';
+                wheelRear.style.bottom = (imgHeight * 0.15) + 'px';
+
+                // Hide loading and show car
+                document.getElementById('loading').style.display = 'none';
+                carContainer.style.display = 'block';
+
+                // Start animations
+                startAnimations();
+            }
+        }
+
+        // Start all animations
+        function startAnimations() {
+            // Wheel rotation animation
+            const wheelAnimation = anime({
+                targets: ['.wheel'],
+                rotate: '1turn',
+                duration: 1000,
+                easing: 'linear',
+                loop: true
+            });
+            animations.push(wheelAnimation);
+
+            // Road stripes animation
+            const roadStripesAnimation = anime({
+                targets: '.road-stripe',
+                translateX: -150,
+                duration: 500,
+                easing: 'linear',
+                loop: true,
+                delay: anime.stagger(100)
+            });
+            animations.push(roadStripesAnimation);
+
+            // Clouds parallax animation (slower)
+            const cloudsAnimation = anime({
+                targets: '.clouds',
+                translateX: '-50%',
+                duration: 15000,
+                easing: 'linear',
+                loop: true
+            });
+            animations.push(cloudsAnimation);
+
+            // Individual cloud movement
+            const cloudElements = document.querySelectorAll('.cloud');
+            cloudElements.forEach((cloud, index) => {
+                const cloudAnim = anime({
+                    targets: cloud,
+                    translateX: -200,
+                    duration: 8000 + (index * 1000),
+                    easing: 'linear',
+                    loop: true
+                });
+                animations.push(cloudAnim);
+            });
+
+            // Add subtle car bounce for realism
+            const carBounce = anime({
+                targets: '#carContainer',
+                translateY: ['-50%', 'calc(-50% - 5px)', '-50%'],
+                duration: 2000,
+                easing: 'easeInOutSine',
+                loop: true
+            });
+            animations.push(carBounce);
+        }
+
+        // Control functions
+        function togglePlayPause() {
+            isPaused = !isPaused;
+            const btn = document.getElementById('playPauseBtn');
+
+            animations.forEach(anim => {
+                if (isPaused) {
+                    anim.pause();
+                    btn.textContent = 'Play';
+                    btn.classList.remove('pause');
+                } else {
+                    anim.play();
+                    btn.textContent = 'Pause';
+                    btn.classList.add('pause');
+                }
+            });
+        }
+
+        function updateSpeed() {
+            animations.forEach(anim => {
+                const currentTime = anim.currentTime;
+                anim.duration = anim.duration / speedMultiplier;
+                anim.seek(currentTime);
+            });
+            document.getElementById('speedDisplay').textContent = speedMultiplier.toFixed(1) + 'x';
+        }
+
+        function speedUp() {
+            speedMultiplier = Math.min(speedMultiplier + 0.5, 3);
+            updateSpeed();
+        }
+
+        function slowDown() {
+            speedMultiplier = Math.max(speedMultiplier - 0.5, 0.5);
+            updateSpeed();
+        }
+
+        // Event listeners
+        document.getElementById('playPauseBtn').addEventListener('click', togglePlayPause);
+        document.getElementById('speedUpBtn').addEventListener('click', speedUp);
+        document.getElementById('slowDownBtn').addEventListener('click', slowDown);
+
+        // Handle image loading errors
+        document.getElementById('carImage').addEventListener('error', () => {
+            document.getElementById('loading').textContent =
+                'Failed to load image. Using placeholder setup...';
+            // Still show the wheels and animations even if image fails
+            document.getElementById('carContainer').style.display = 'block';
+            positionWheels();
+        });
+
+        // Initialize
+        createClouds();
+        createRoadStripes();
+        positionWheels();
+    </script>
+</body>
+</html>
