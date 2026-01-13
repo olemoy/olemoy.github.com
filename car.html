@@ -78,16 +78,21 @@
             top: 50%;
             transform: translate(-50%, -50%);
             z-index: 10;
-            width: 640px;
+            max-width: 90vw;
+            max-height: 85vh;
+            width: auto;
             height: auto;
         }
 
         .car-image {
-            width: 100%;
+            max-width: 90vw;
+            max-height: 85vh;
+            width: auto;
             height: auto;
             display: block;
             position: relative;
             z-index: 2;
+            object-fit: contain;
         }
 
         /* Wheel overlays */
@@ -126,65 +131,115 @@
         }
 
         /* Control panel */
-        .controls {
-            position: absolute;
-            top: 20px;
-            right: 20px;
+        .controls-wrapper {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
             z-index: 100;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 15px;
-            border-radius: 8px;
-            color: white;
-            max-width: 300px;
+            width: 100%;
+            max-width: 600px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
-        .controls button {
-            padding: 8px 16px;
+        .controls-toggle {
+            padding: 12px 30px;
+            margin-bottom: 0;
+            border: none;
+            border-radius: 20px 20px 0 0;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .controls-toggle:hover {
+            background: rgba(0, 0, 0, 0.9);
+            transform: translateY(-2px);
+        }
+
+        .controls-toggle::before {
+            content: '▲ ';
+        }
+
+        .controls-toggle.collapsed::before {
+            content: '▼ ';
+        }
+
+        .controls-panel {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 20px;
+            border-radius: 0;
+            color: white;
+            max-height: 70vh;
+            overflow-y: auto;
+            transition: all 0.3s ease;
+            box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .controls-panel.hidden {
+            max-height: 0;
+            padding: 0 20px;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .controls-panel button {
+            padding: 10px 20px;
             margin: 5px;
             border: none;
-            border-radius: 4px;
+            border-radius: 6px;
             background: #4CAF50;
             color: white;
             cursor: pointer;
             font-size: 14px;
+            transition: background 0.2s;
         }
 
-        .controls button:hover {
+        .controls-panel button:hover {
             background: #45a049;
         }
 
-        .controls button.pause {
+        .controls-panel button.pause {
             background: #f44336;
         }
 
-        .controls button.pause:hover {
+        .controls-panel button.pause:hover {
             background: #da190b;
         }
 
-        .controls input[type="text"],
-        .controls input[type="file"] {
+        .controls-panel input[type="text"],
+        .controls-panel input[type="file"] {
             width: 100%;
-            padding: 8px;
+            padding: 10px;
             margin: 5px 0;
-            border-radius: 4px;
+            border-radius: 6px;
             border: none;
-            font-size: 12px;
+            font-size: 13px;
+            box-sizing: border-box;
         }
 
-        .controls label {
+        .controls-panel label {
             display: block;
-            margin-top: 10px;
-            font-size: 12px;
+            margin-top: 12px;
+            font-size: 13px;
             color: #ddd;
+            font-weight: 500;
         }
 
-        .controls .section {
+        .controls-panel .section {
             border-top: 1px solid #555;
-            padding-top: 10px;
-            margin-top: 10px;
+            padding-top: 15px;
+            margin-top: 15px;
         }
 
-        .controls .section:first-child {
+        .controls-panel .section:first-child {
             border-top: none;
             padding-top: 0;
             margin-top: 0;
@@ -195,6 +250,13 @@
             color: #aaa;
             margin: 5px 0;
             line-height: 1.4;
+        }
+
+        .section-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
         }
 
         /* Loading state */
@@ -234,39 +296,44 @@
         </div>
 
         <!-- Controls -->
-        <div class="controls">
-            <div class="section">
-                <strong>Animation Controls</strong>
-                <button id="playPauseBtn">Pause</button>
-                <button id="speedUpBtn">Speed Up</button>
-                <button id="slowDownBtn">Slow Down</button>
-                <div style="margin-top: 10px;">Speed: <span id="speedDisplay">1x</span></div>
-            </div>
+        <div class="controls-wrapper">
+            <button class="controls-toggle collapsed" id="controlsToggle">Controls</button>
+            <div class="controls-panel hidden" id="controlsPanel">
+                <div class="section">
+                    <strong>🎮 Animation Controls</strong>
+                    <div class="section-grid">
+                        <button id="playPauseBtn">Pause</button>
+                        <button id="speedUpBtn">Speed Up</button>
+                        <button id="slowDownBtn">Slow Down</button>
+                    </div>
+                    <div style="margin-top: 10px; text-align: center;">Speed: <span id="speedDisplay">1x</span></div>
+                </div>
 
-            <div class="section">
-                <strong>Image Options</strong>
-                <label for="customImage">Upload Custom Car Image:</label>
-                <input type="file" id="customImage" accept="image/*">
-                <p class="info-text">Upload a car image with transparent background (PNG) for best results</p>
-            </div>
+                <div class="section">
+                    <strong>🖼️ Change Image</strong>
+                    <label for="customImage">Upload Custom Car Image:</label>
+                    <input type="file" id="customImage" accept="image/*">
+                    <p class="info-text">Upload a car image with transparent background (PNG) for best results</p>
+                </div>
 
-            <div class="section">
-                <strong>Remove.bg Integration</strong>
-                <label for="removeBgKey">Remove.bg API Key:</label>
-                <input type="text" id="removeBgKey" placeholder="Enter API key">
-                <button id="processImageBtn">Process Current Image</button>
-                <p class="info-text">Get free API key at <a href="https://remove.bg/api" target="_blank" style="color: #4CAF50;">remove.bg/api</a></p>
-                <div id="processingStatus" style="margin-top: 5px; font-size: 11px;"></div>
-            </div>
+                <div class="section">
+                    <strong>✂️ Remove Background</strong>
+                    <label for="removeBgKey">Remove.bg API Key:</label>
+                    <input type="text" id="removeBgKey" placeholder="Enter API key">
+                    <button id="processImageBtn" style="width: 100%; margin-top: 5px;">Remove Background</button>
+                    <p class="info-text">Get free API key at <a href="https://remove.bg/api" target="_blank" style="color: #4CAF50;">remove.bg/api</a></p>
+                    <div id="processingStatus" style="margin-top: 5px; font-size: 11px;"></div>
+                </div>
 
-            <div class="section">
-                <strong>Wheel Adjustment</strong>
-                <label for="wheelSize">Wheel Size: <span id="wheelSizeValue">25%</span></label>
-                <input type="range" id="wheelSize" min="15" max="35" value="25" style="width: 100%;">
-                <label for="wheelFrontPos">Front Wheel Pos: <span id="wheelFrontValue">65%</span></label>
-                <input type="range" id="wheelFrontPos" min="50" max="80" value="65" style="width: 100%;">
-                <label for="wheelRearPos">Rear Wheel Pos: <span id="wheelRearValue">25%</span></label>
-                <input type="range" id="wheelRearPos" min="10" max="40" value="25" style="width: 100%;">
+                <div class="section">
+                    <strong>⚙️ Wheel Adjustment</strong>
+                    <label for="wheelSize">Wheel Size: <span id="wheelSizeValue">25%</span></label>
+                    <input type="range" id="wheelSize" min="15" max="35" value="25" style="width: 100%;">
+                    <label for="wheelFrontPos">Front Wheel Pos: <span id="wheelFrontValue">65%</span></label>
+                    <input type="range" id="wheelFrontPos" min="50" max="80" value="65" style="width: 100%;">
+                    <label for="wheelRearPos">Rear Wheel Pos: <span id="wheelRearValue">25%</span></label>
+                    <input type="range" id="wheelRearPos" min="10" max="40" value="25" style="width: 100%;">
+                </div>
             </div>
         </div>
     </div>
@@ -576,7 +643,23 @@
             updateWheelPositions();
         }
 
+        // Toggle controls panel
+        function toggleControls() {
+            const toggle = document.getElementById('controlsToggle');
+            const panel = document.getElementById('controlsPanel');
+
+            toggle.classList.toggle('collapsed');
+            panel.classList.toggle('hidden');
+        }
+
+        // Handle window resize
+        function handleResize() {
+            // Update wheel positions when window is resized
+            updateWheelPositions();
+        }
+
         // Event listeners
+        document.getElementById('controlsToggle').addEventListener('click', toggleControls);
         document.getElementById('playPauseBtn').addEventListener('click', togglePlayPause);
         document.getElementById('speedUpBtn').addEventListener('click', speedUp);
         document.getElementById('slowDownBtn').addEventListener('click', slowDown);
@@ -585,6 +668,7 @@
         document.getElementById('wheelSize').addEventListener('input', handleWheelSizeChange);
         document.getElementById('wheelFrontPos').addEventListener('input', handleWheelFrontChange);
         document.getElementById('wheelRearPos').addEventListener('input', handleWheelRearChange);
+        window.addEventListener('resize', handleResize);
 
         // Load saved API key from localStorage
         const savedApiKey = localStorage.getItem('removeBgApiKey');
