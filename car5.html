@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pixel Art Car Animation</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(to bottom, #5DADE2 0%, #85C1E2 50%, #52BE80 50%, #52BE80 100%);
+            overflow: hidden;
+            font-family: 'Press Start 2P', 'Courier New', monospace;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
+
+        .controls {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 15px 25px;
+            border: 4px solid #fff;
+            box-shadow: 4px 4px 0 rgba(0,0,0,0.5);
+        }
+
+        .controls h2 {
+            color: #fff;
+            margin-bottom: 10px;
+            font-size: 12px;
+            text-align: center;
+        }
+
+        .controls button {
+            margin: 5px;
+            padding: 10px 15px;
+            border: 3px solid #fff;
+            background: #3498db;
+            color: #fff;
+            cursor: pointer;
+            font-size: 9px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            transition: all 0.1s;
+            text-transform: uppercase;
+        }
+
+        .controls button:hover {
+            background: #2980b9;
+            transform: translate(2px, 2px);
+        }
+
+        .controls button.active {
+            background: #27ae60;
+            border-color: #2ecc71;
+        }
+
+        @media (max-width: 640px) {
+            .controls h2 {
+                font-size: 8px;
+            }
+            .controls button {
+                font-size: 7px;
+                padding: 8px 12px;
+            }
+        }
+
+        #gameCanvas {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border: 4px solid #000;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
+
+        .mode-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 100;
+        }
+
+        .mode-toggle button {
+            padding: 10px 20px;
+            background: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            border: 3px solid #fff;
+            cursor: pointer;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        .mode-toggle button:hover {
+            background: #2c3e50;
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <h2>PIXEL CARS</h2>
+        <div>
+            <button onclick="startAnimation('sedan', false)" id="btn-sedan">Sedan</button>
+            <button onclick="startAnimation('suv', false)" id="btn-suv">SUV</button>
+            <button onclick="startAnimation('mpv', false)" id="btn-mpv">MPV</button>
+            <button onclick="startAnimation('wagon', false)" id="btn-wagon">Wagon</button>
+        </div>
+    </div>
+
+    <div class="mode-toggle">
+        <button onclick="toggleParallax()" id="parallax-btn">Parallax Mode</button>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const PIXEL_SIZE = 4; // Each "pixel" is 4x4 real pixels
+        let canvasWidth = 320; // Logical width in pixels
+        let canvasHeight = 180; // Logical height in pixels
+
+        let isParallax = false;
+        let currentCar = 'sedan';
+        let carX = 0;
+        let carY = 110;
+        let roadOffset = 0;
+        let wheelFrame = 0;
+        let animationState = 'driving-in'; // driving-in, paused, driving-out
+        let pauseTimer = 0;
+        let isAnimating = false;
+
+        // Background objects for parallax
+        let bgObjects = [];
+
+        // Color palette
+        const COLORS = {
+            // Car colors
+            carBody1: '#2c3e50',
+            carBody2: '#34495e',
+            carBody3: '#7f8c8d',
+            carBody4: '#8e44ad',
+            window: '#4a90e2',
+            wheel: '#1a1a1a',
+            wheelInner: '#555',
+            light: '#e74c3c',
+            lightFront: '#f39c12',
+            // Environment
+            sky: '#5DADE2',
+            ground: '#52BE80',
+            road: '#444',
+            roadLine: '#fff',
+            treeGreen: '#27ae60',
+            treeBrown: '#8B4513',
+            cloud: '#ecf0f1',
+            sign: '#f39c12',
+            signPost: '#8B4513'
+        };
+
+        // Pixel art car designs (0 = transparent, numbers = color index)
+        const cars = {
+            sedan: {
+                width: 28,
+                height: 12,
+                pixels: [
+                    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                    [0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0],
+                    [0,0,0,0,0,0,1,1,2,2,2,2,2,2,2,2,2,2,1,1,1,0,0,0,0,0,0,0],
+                    [0,0,0,0,0,1,1,2,2,2,2,2,2,2,2,2,2,2,2,1,1,1,0,0,0,0,0,0],
+                    [0,0,0,0,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,1,1,0,0,0,0,0],
+                    [0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0],
+                    [0,0,3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,3,0,0,0],
+                    [0,0,0,4,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,4,4,0,0,0,0,0],
+                    [0,0,0,5,6,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,6,5,0,0,0,0,0],
+                    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                ],
+                colors: [null, COLORS.carBody1, COLORS.window, COLORS.light, COLORS.wheel, COLORS.wheelInner, COLORS.wheelInner]
+            },
+            suv: {
+                width: 28,
+                height: 14,
+                pixels: [
+                    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                    [0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0],
+                    [0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0],
+                    [0,0,0,0,0,1,1,2,2,2,2,1,1,1,1,2,2,2,2,1,1,1,1,0,0,0,0,0],
+                    [0,0,0,0,1,1,2,2,2,2,2,1,1,1,1,2,2,2,2,2,1,1,1,1,0,0,0,0],
+                    [0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0],
+                    [0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0],
+                    [0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+                    [0,3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,3,0],
+                    [0,0,4,4,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,4,4,4,0,0,0,0],
+                    [0,0,5,6,6,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,6,6,5,0,0,0,0],
+                    [0,0,5,6,6,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,6,6,5,0,0,0,0],
+                    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                ],
+                colors: [null, COLORS.carBody2, COLORS.window, COLORS.light, COLORS.wheel, COLORS.wheelInner, COLORS.wheelInner]
+            },
+            mpv: {
+                width: 32,
+                height: 14,
+                pixels: [
+                    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                    [0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0],
+                    [0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0],
+                    [0,0,0,0,1,1,2,2,1,2,2,2,1,2,2,2,1,2,2,2,1,1,1,1,1,1,1,1,0,0,0,0],
+                    [0,0,0,1,1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,1,1,1,1,1,1,1,1,1,0,0,0],
+                    [0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0],
+                    [0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+                    [0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+                    [3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,3],
+                    [0,4,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,4,4,0,0,0],
+                    [0,5,6,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,6,5,0,0,0],
+                    [0,5,6,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,6,5,0,0,0],
+                    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                ],
+                colors: [null, COLORS.carBody3, COLORS.window, COLORS.light, COLORS.wheel, COLORS.wheelInner, COLORS.wheelInner]
+            },
+            wagon: {
+                width: 30,
+                height: 12,
+                pixels: [
+                    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                    [0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0],
+                    [0,0,0,0,0,0,1,1,2,2,2,1,2,2,2,1,2,2,2,2,2,1,1,1,1,0,0,0,0,0],
+                    [0,0,0,0,0,1,1,2,2,2,2,1,2,2,2,1,2,2,2,2,2,2,1,1,1,1,0,0,0,0],
+                    [0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0],
+                    [0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0],
+                    [0,0,3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,3,0],
+                    [0,0,0,4,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,4,4,0,0,0,0,0],
+                    [0,0,0,5,6,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,6,5,0,0,0,0,0],
+                    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                ],
+                colors: [null, COLORS.carBody4, COLORS.window, COLORS.light, COLORS.wheel, COLORS.wheelInner, COLORS.wheelInner]
+            }
+        };
+
+        // Pixel art scenery
+        const scenery = {
+            tree: {
+                width: 8,
+                height: 12,
+                pixels: [
+                    [0,0,0,1,1,0,0,0],
+                    [0,0,1,1,1,1,0,0],
+                    [0,1,1,1,1,1,1,0],
+                    [1,1,1,1,1,1,1,1],
+                    [0,1,1,1,1,1,1,0],
+                    [0,1,1,1,1,1,1,0],
+                    [1,1,1,1,1,1,1,1],
+                    [0,1,1,1,1,1,1,0],
+                    [0,0,1,1,1,1,0,0],
+                    [0,0,0,2,2,0,0,0],
+                    [0,0,0,2,2,0,0,0],
+                    [0,0,0,2,2,0,0,0],
+                ],
+                colors: [null, COLORS.treeGreen, COLORS.treeBrown]
+            },
+            cloud: {
+                width: 12,
+                height: 6,
+                pixels: [
+                    [0,0,0,1,1,1,1,0,0,0,0,0],
+                    [0,0,1,1,1,1,1,1,1,0,0,0],
+                    [0,1,1,1,1,1,1,1,1,1,0,0],
+                    [1,1,1,1,1,1,1,1,1,1,1,0],
+                    [1,1,1,1,1,1,1,1,1,1,1,1],
+                    [0,0,0,0,0,0,0,0,0,0,0,0],
+                ],
+                colors: [null, COLORS.cloud]
+            },
+            sign: {
+                width: 6,
+                height: 10,
+                pixels: [
+                    [0,1,1,1,1,0],
+                    [1,1,2,2,1,1],
+                    [1,2,2,2,2,1],
+                    [1,1,2,2,1,1],
+                    [0,1,1,1,1,0],
+                    [0,0,3,3,0,0],
+                    [0,0,3,3,0,0],
+                    [0,0,3,3,0,0],
+                    [0,0,3,3,0,0],
+                    [0,0,3,3,0,0],
+                ],
+                colors: [null, '#000', COLORS.sign, COLORS.signPost]
+            },
+            bush: {
+                width: 8,
+                height: 4,
+                pixels: [
+                    [0,1,1,1,1,1,1,0],
+                    [1,1,1,1,1,1,1,1],
+                    [1,1,1,1,1,1,1,1],
+                    [0,1,1,1,1,1,1,0],
+                ],
+                colors: [null, '#2d5016']
+            }
+        };
+
+        function resizeCanvas() {
+            const scale = Math.min(
+                Math.floor(window.innerWidth * 0.9 / canvasWidth),
+                Math.floor(window.innerHeight * 0.7 / canvasHeight)
+            );
+            canvas.width = canvasWidth * PIXEL_SIZE;
+            canvas.height = canvasHeight * PIXEL_SIZE;
+            canvas.style.width = (canvasWidth * scale) + 'px';
+            canvas.style.height = (canvasHeight * scale) + 'px';
+        }
+
+        function drawPixel(x, y, color) {
+            if (!color) return;
+            ctx.fillStyle = color;
+            ctx.fillRect(x * PIXEL_SIZE, y * PIXEL_SIZE, PIXEL_SIZE, PIXEL_SIZE);
+        }
+
+        function drawPixelArt(art, x, y, frame = 0) {
+            for (let row = 0; row < art.pixels.length; row++) {
+                for (let col = 0; col < art.pixels[row].length; col++) {
+                    const colorIndex = art.pixels[row][col];
+                    if (colorIndex > 0) {
+                        let color = art.colors[colorIndex];
+
+                        // Animate wheels (color indices 5 and 6)
+                        if (colorIndex === 5 || colorIndex === 6) {
+                            color = (frame % 2 === 0) ? art.colors[5] : art.colors[6];
+                        }
+
+                        drawPixel(x + col, y + row, color);
+                    }
+                }
+            }
+        }
+
+        function drawBackground() {
+            // Sky
+            ctx.fillStyle = COLORS.sky;
+            ctx.fillRect(0, 0, canvas.width, canvas.height * 0.65);
+
+            // Ground
+            ctx.fillStyle = COLORS.ground;
+            ctx.fillRect(0, canvas.height * 0.65, canvas.width, canvas.height * 0.35);
+
+            // Road
+            ctx.fillStyle = COLORS.road;
+            ctx.fillRect(0, canvas.height * 0.75, canvas.width, canvas.height * 0.25);
+
+            // Road lines
+            ctx.fillStyle = COLORS.roadLine;
+            const lineY = Math.floor(canvasHeight * 0.82);
+            for (let x = roadOffset; x < canvasWidth; x += 8) {
+                ctx.fillRect(x * PIXEL_SIZE, lineY * PIXEL_SIZE, 4 * PIXEL_SIZE, 1 * PIXEL_SIZE);
+            }
+        }
+
+        function initBackgroundObjects() {
+            bgObjects = [];
+            const types = ['tree', 'cloud', 'sign', 'bush', 'tree'];
+
+            for (let i = 0; i < 8; i++) {
+                const type = types[i % types.length];
+                const obj = scenery[type];
+                bgObjects.push({
+                    type: type,
+                    x: canvasWidth + i * 50,
+                    y: type === 'cloud' ? 20 + Math.random() * 30 : canvasHeight - 50,
+                    speed: type === 'cloud' ? 0.3 : 1.5,
+                    art: obj
+                });
+            }
+        }
+
+        function updateBackgroundObjects() {
+            if (!isParallax) return;
+
+            bgObjects.forEach(obj => {
+                obj.x -= obj.speed;
+
+                // Respawn objects that moved off screen
+                if (obj.x < -obj.art.width) {
+                    obj.x = canvasWidth + Math.random() * 50;
+                }
+            });
+        }
+
+        function drawBackgroundObjects() {
+            if (!isParallax) return;
+
+            bgObjects.forEach(obj => {
+                drawPixelArt(obj.art, Math.floor(obj.x), Math.floor(obj.y));
+            });
+        }
+
+        function animate() {
+            // Clear canvas
+            drawBackground();
+
+            // Update road animation
+            roadOffset = (roadOffset - 2) % 8;
+            if (roadOffset < 0) roadOffset = 8 + roadOffset;
+
+            // Update wheel animation
+            wheelFrame = (wheelFrame + 1) % 4;
+
+            // Draw background objects (parallax mode)
+            if (isParallax) {
+                updateBackgroundObjects();
+                drawBackgroundObjects();
+            }
+
+            // Update car position based on mode
+            if (isParallax) {
+                // In parallax mode, car stays centered
+                carX = canvasWidth / 2 - cars[currentCar].width / 2;
+            } else {
+                // Regular mode: car moves
+                if (animationState === 'driving-in') {
+                    carX += 2;
+                    if (carX >= canvasWidth / 2 - cars[currentCar].width / 2) {
+                        animationState = 'paused';
+                        pauseTimer = 0;
+                    }
+                } else if (animationState === 'paused') {
+                    pauseTimer++;
+                    if (pauseTimer > 180) { // 3 seconds at 60fps
+                        animationState = 'driving-out';
+                    }
+                } else if (animationState === 'driving-out') {
+                    carX += 2;
+                    if (carX > canvasWidth + cars[currentCar].width) {
+                        // Reset
+                        carX = -cars[currentCar].width;
+                        animationState = 'driving-in';
+                    }
+                }
+            }
+
+            // Draw car
+            drawPixelArt(cars[currentCar], Math.floor(carX), carY, wheelFrame);
+
+            if (isAnimating) {
+                requestAnimationFrame(animate);
+            }
+        }
+
+        function startAnimation(carType, parallax = false) {
+            currentCar = carType;
+            isParallax = parallax;
+
+            if (parallax && bgObjects.length === 0) {
+                initBackgroundObjects();
+            }
+
+            // Reset car position
+            if (!isParallax) {
+                carX = -cars[currentCar].width;
+                animationState = 'driving-in';
+            } else {
+                carX = canvasWidth / 2 - cars[currentCar].width / 2;
+            }
+
+            pauseTimer = 0;
+
+            // Update button states
+            document.querySelectorAll('.controls button').forEach(b => b.classList.remove('active'));
+            document.getElementById(`btn-${carType}`).classList.add('active');
+
+            if (!isAnimating) {
+                isAnimating = true;
+                animate();
+            }
+        }
+
+        function toggleParallax() {
+            isParallax = !isParallax;
+            const btn = document.getElementById('parallax-btn');
+            btn.textContent = isParallax ? 'Normal Mode' : 'Parallax Mode';
+            btn.style.background = isParallax ? '#27ae60' : 'rgba(0, 0, 0, 0.8)';
+
+            if (isParallax && bgObjects.length === 0) {
+                initBackgroundObjects();
+            }
+
+            if (isParallax) {
+                carX = canvasWidth / 2 - cars[currentCar].width / 2;
+            }
+        }
+
+        function stopAnimation() {
+            isAnimating = false;
+            document.querySelectorAll('.controls button').forEach(b => b.classList.remove('active'));
+        }
+
+        // Initialize
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // Auto-start
+        setTimeout(() => startAnimation('sedan', false), 500);
+    </script>
+</body>
+</html>

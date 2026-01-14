@@ -195,7 +195,7 @@
     <div class="container">
         <header>
             <h1>🚗 Animated Car Silhouettes Gallery</h1>
-            <p class="subtitle">Explore different animation techniques with SVG, CSS, and ASCII art</p>
+            <p class="subtitle">Explore different animation techniques with SVG, Canvas, CSS, and ASCII art</p>
         </header>
 
         <div class="gallery">
@@ -293,6 +293,27 @@
                     <a href="car3.html" class="btn">View Animation →</a>
                 </div>
             </div>
+
+            <!-- Card 4: Pixel Art -->
+            <div class="card" onclick="window.location.href='car5.html'">
+                <div class="card-preview" style="background: linear-gradient(to bottom, #5DADE2 0%, #85C1E2 50%, #52BE80 50%, #52BE80 100%); position: relative;">
+                    <canvas id="preview-canvas" width="120" height="60" style="image-rendering: pixelated; image-rendering: crisp-edges;"></canvas>
+                    <div style="position: absolute; bottom: 0; width: 100%; height: 30px; background: #444;"></div>
+                </div>
+                <div class="card-content">
+                    <h2 class="card-title">Pixel Art Animation</h2>
+                    <p class="card-description">
+                        Retro 8-bit style with 4x4 pixel blocks using HTML5 Canvas
+                    </p>
+                    <ul class="card-features">
+                        <li>Pure pixel art using Canvas API</li>
+                        <li>4x4 pixel blocks for authentic retro look</li>
+                        <li>Multiple car types and scenery</li>
+                        <li>Switchable parallax mode</li>
+                    </ul>
+                    <a href="car5.html" class="btn">View Animation →</a>
+                </div>
+            </div>
         </div>
 
         <div class="footer">
@@ -303,7 +324,7 @@
                 optimized for both desktop and mobile devices.
             </p>
             <div class="tech-stack">
-                <strong>Technologies Used:</strong> Vanilla JavaScript, Anime.js, SVG, CSS3 Animations, ASCII Art
+                <strong>Technologies Used:</strong> Vanilla JavaScript, Anime.js, SVG, HTML5 Canvas, CSS3 Animations, ASCII Art
             </div>
             <div style="margin-top: 15px;">
                 <strong>Features:</strong> Mobile-first design, Hardware-accelerated animations,
@@ -335,6 +356,38 @@
             }
         `;
         document.head.appendChild(style);
+
+        // Draw pixel art preview
+        const previewCanvas = document.getElementById('preview-canvas');
+        if (previewCanvas) {
+            const ctx = previewCanvas.getContext('2d');
+            const pixelSize = 2;
+
+            // Simple pixel car pattern
+            const car = [
+                [0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0],
+                [0,0,0,0,0,1,1,2,2,2,2,2,2,1,1,1,1,0,0,0,0,0],
+                [0,0,0,0,1,1,2,2,2,2,2,2,2,2,1,1,1,1,0,0,0,0],
+                [0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0],
+                [0,0,3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,3,0,0],
+                [0,0,0,4,4,0,0,0,0,0,0,0,0,0,0,4,4,0,0,0,0,0],
+                [0,0,0,5,5,0,0,0,0,0,0,0,0,0,0,5,5,0,0,0,0,0],
+            ];
+
+            const colors = [null, '#2c3e50', '#4a90e2', '#e74c3c', '#1a1a1a', '#555'];
+
+            const offsetX = 20;
+            const offsetY = 20;
+
+            car.forEach((row, y) => {
+                row.forEach((pixel, x) => {
+                    if (pixel > 0) {
+                        ctx.fillStyle = colors[pixel];
+                        ctx.fillRect((offsetX + x) * pixelSize, (offsetY + y) * pixelSize, pixelSize, pixelSize);
+                    }
+                });
+            });
+        }
     </script>
 </body>
 </html>
