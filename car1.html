@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animated Car Silhouettes</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(to bottom, #87CEEB 0%, #E0F6FF 50%, #90EE90 50%, #90EE90 100%);
+            overflow-x: hidden;
+            font-family: Arial, sans-serif;
+        }
+
+        .road {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 30vh;
+            background: #666;
+            border-top: 4px solid white;
+        }
+
+        .road-line {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 100%;
+            height: 4px;
+            background: repeating-linear-gradient(
+                to right,
+                white 0,
+                white 40px,
+                transparent 40px,
+                transparent 80px
+            );
+        }
+
+        .car-container {
+            position: absolute;
+            bottom: 8vh;
+            display: none;
+        }
+
+        .car {
+            width: 200px;
+            height: auto;
+        }
+
+        @media (max-width: 640px) {
+            .car {
+                width: 150px;
+            }
+        }
+
+        .controls {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .controls button {
+            margin: 5px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background: #3b82f6;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        .controls button:hover {
+            background: #2563eb;
+        }
+
+        .controls button:active {
+            transform: scale(0.95);
+        }
+
+        h2 {
+            margin-bottom: 10px;
+            color: #333;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <h2>Select Car Type</h2>
+        <button onclick="animateCar('sedan')">Sedan</button>
+        <button onclick="animateCar('suv')">SUV</button>
+        <button onclick="animateCar('mpv')">MPV</button>
+        <button onclick="animateCar('wagon')">Station Wagon</button>
+    </div>
+
+    <div class="road">
+        <div class="road-line"></div>
+    </div>
+
+    <!-- Sedan -->
+    <div class="car-container" id="sedan">
+        <svg class="car" viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg">
+            <!-- Car Body -->
+            <g id="sedan-body">
+                <!-- Main body -->
+                <path d="M 30 70 L 25 60 L 30 50 L 55 45 L 75 40 L 105 40 L 125 45 L 145 50 L 170 60 L 175 70 Z"
+                      fill="#2c3e50" stroke="#1a252f" stroke-width="1.5"/>
+                <!-- Windows -->
+                <path d="M 60 45 L 70 42 L 95 42 L 95 50 L 60 50 Z" fill="#4a90e2" opacity="0.7"/>
+                <path d="M 100 42 L 120 45 L 140 50 L 100 50 Z" fill="#4a90e2" opacity="0.7"/>
+                <!-- Details -->
+                <ellipse cx="35" cy="70" rx="8" ry="3" fill="#c0392b"/>
+                <ellipse cx="165" cy="70" rx="8" ry="3" fill="#f39c12"/>
+            </g>
+            <!-- Wheels -->
+            <g id="sedan-wheel-front">
+                <circle cx="140" cy="75" r="12" fill="#1a252f" stroke="#34495e" stroke-width="2"/>
+                <circle cx="140" cy="75" r="6" fill="#7f8c8d"/>
+                <line x1="140" y1="69" x2="140" y2="81" stroke="#34495e" stroke-width="1.5"/>
+                <line x1="134" y1="75" x2="146" y2="75" stroke="#34495e" stroke-width="1.5"/>
+            </g>
+            <g id="sedan-wheel-rear">
+                <circle cx="50" cy="75" r="12" fill="#1a252f" stroke="#34495e" stroke-width="2"/>
+                <circle cx="50" cy="75" r="6" fill="#7f8c8d"/>
+                <line x1="50" y1="69" x2="50" y2="81" stroke="#34495e" stroke-width="1.5"/>
+                <line x1="44" y1="75" x2="56" y2="75" stroke="#34495e" stroke-width="1.5"/>
+            </g>
+        </svg>
+    </div>
+
+    <!-- SUV -->
+    <div class="car-container" id="suv">
+        <svg class="car" viewBox="0 0 200 110" xmlns="http://www.w3.org/2000/svg">
+            <!-- Car Body -->
+            <g id="suv-body">
+                <!-- Main body -->
+                <path d="M 30 75 L 28 65 L 32 50 L 50 40 L 80 35 L 120 35 L 150 40 L 168 50 L 172 65 L 170 75 Z"
+                      fill="#34495e" stroke="#1a252f" stroke-width="2"/>
+                <!-- Roof -->
+                <rect x="45" y="38" width="110" height="12" fill="#2c3e50" stroke="#1a252f" stroke-width="1.5"/>
+                <!-- Windows -->
+                <rect x="55" y="40" width="35" height="10" fill="#4a90e2" opacity="0.7"/>
+                <rect x="110" y="40" width="35" height="10" fill="#4a90e2" opacity="0.7"/>
+                <!-- Grille -->
+                <rect x="165" y="55" width="6" height="15" fill="#95a5a6" rx="1"/>
+                <!-- Lights -->
+                <ellipse cx="35" cy="75" rx="8" ry="3" fill="#c0392b"/>
+                <ellipse cx="165" cy="75" rx="8" ry="3" fill="#f39c12"/>
+            </g>
+            <!-- Wheels -->
+            <g id="suv-wheel-front">
+                <circle cx="145" cy="82" r="14" fill="#1a252f" stroke="#34495e" stroke-width="2"/>
+                <circle cx="145" cy="82" r="7" fill="#7f8c8d"/>
+                <line x1="145" y1="75" x2="145" y2="89" stroke="#34495e" stroke-width="2"/>
+                <line x1="138" y1="82" x2="152" y2="82" stroke="#34495e" stroke-width="2"/>
+            </g>
+            <g id="suv-wheel-rear">
+                <circle cx="50" cy="82" r="14" fill="#1a252f" stroke="#34495e" stroke-width="2"/>
+                <circle cx="50" cy="82" r="7" fill="#7f8c8d"/>
+                <line x1="50" y1="75" x2="50" y2="89" stroke="#34495e" stroke-width="2"/>
+                <line x1="43" y1="82" x2="57" y2="82" stroke="#34495e" stroke-width="2"/>
+            </g>
+        </svg>
+    </div>
+
+    <!-- MPV -->
+    <div class="car-container" id="mpv">
+        <svg class="car" viewBox="0 0 220 110" xmlns="http://www.w3.org/2000/svg">
+            <!-- Car Body -->
+            <g id="mpv-body">
+                <!-- Main body -->
+                <path d="M 35 75 L 33 60 L 38 45 L 58 38 L 180 38 L 187 45 L 192 60 L 190 75 Z"
+                      fill="#7f8c8d" stroke="#5a6c7d" stroke-width="2"/>
+                <!-- Windshield -->
+                <path d="M 55 40 L 52 45 L 52 52 L 70 42 Z" fill="#4a90e2" opacity="0.7"/>
+                <!-- Side windows -->
+                <rect x="75" y="42" width="35" height="11" fill="#4a90e2" opacity="0.7" rx="2"/>
+                <rect x="115" y="42" width="35" height="11" fill="#4a90e2" opacity="0.7" rx="2"/>
+                <rect x="155" y="42" width="25" height="11" fill="#4a90e2" opacity="0.7" rx="2"/>
+                <!-- Door lines -->
+                <line x1="108" y1="50" x2="108" y2="75" stroke="#5a6c7d" stroke-width="2"/>
+                <line x1="148" y1="50" x2="148" y2="75" stroke="#5a6c7d" stroke-width="2"/>
+                <!-- Lights -->
+                <ellipse cx="40" cy="75" rx="8" ry="3" fill="#c0392b"/>
+                <ellipse cx="185" cy="75" rx="8" ry="3" fill="#f39c12"/>
+            </g>
+            <!-- Wheels -->
+            <g id="mpv-wheel-front">
+                <circle cx="160" cy="82" r="13" fill="#1a252f" stroke="#34495e" stroke-width="2"/>
+                <circle cx="160" cy="82" r="6.5" fill="#7f8c8d"/>
+                <line x1="160" y1="75.5" x2="160" y2="88.5" stroke="#34495e" stroke-width="1.5"/>
+                <line x1="153.5" y1="82" x2="166.5" y2="82" stroke="#34495e" stroke-width="1.5"/>
+            </g>
+            <g id="mpv-wheel-rear">
+                <circle cx="60" cy="82" r="13" fill="#1a252f" stroke="#34495e" stroke-width="2"/>
+                <circle cx="60" cy="82" r="6.5" fill="#7f8c8d"/>
+                <line x1="60" y1="75.5" x2="60" y2="88.5" stroke="#34495e" stroke-width="1.5"/>
+                <line x1="53.5" y1="82" x2="66.5" y2="82" stroke="#34495e" stroke-width="1.5"/>
+            </g>
+        </svg>
+    </div>
+
+    <!-- Station Wagon -->
+    <div class="car-container" id="wagon">
+        <svg class="car" viewBox="0 0 220 100" xmlns="http://www.w3.org/2000/svg">
+            <!-- Car Body -->
+            <g id="wagon-body">
+                <!-- Main body -->
+                <path d="M 30 72 L 28 62 L 32 50 L 55 45 L 80 42 L 160 42 L 180 45 L 188 50 L 192 62 L 190 72 Z"
+                      fill="#8e44ad" stroke="#6c3483" stroke-width="2"/>
+                <!-- Extended back -->
+                <rect x="155" y="45" width="33" height="27" fill="#8e44ad" stroke="#6c3483" stroke-width="2"/>
+                <!-- Windows -->
+                <path d="M 60 45 L 70 43 L 95 43 L 95 52 L 60 52 Z" fill="#4a90e2" opacity="0.7"/>
+                <rect x="100" y="43" width="35" height="9" fill="#4a90e2" opacity="0.7"/>
+                <rect x="140" y="45" width="45" height="9" fill="#4a90e2" opacity="0.7"/>
+                <!-- Details -->
+                <line x1="137" y1="50" x2="137" y2="72" stroke="#6c3483" stroke-width="2"/>
+                <!-- Lights -->
+                <ellipse cx="35" cy="72" rx="8" ry="3" fill="#c0392b"/>
+                <ellipse cx="185" cy="72" rx="8" ry="3" fill="#f39c12"/>
+            </g>
+            <!-- Wheels -->
+            <g id="wagon-wheel-front">
+                <circle cx="155" cy="78" r="12" fill="#1a252f" stroke="#34495e" stroke-width="2"/>
+                <circle cx="155" cy="78" r="6" fill="#7f8c8d"/>
+                <line x1="155" y1="72" x2="155" y2="84" stroke="#34495e" stroke-width="1.5"/>
+                <line x1="149" y1="78" x2="161" y2="78" stroke="#34495e" stroke-width="1.5"/>
+            </g>
+            <g id="wagon-wheel-rear">
+                <circle cx="55" cy="78" r="12" fill="#1a252f" stroke="#34495e" stroke-width="2"/>
+                <circle cx="55" cy="78" r="6" fill="#7f8c8d"/>
+                <line x1="55" y1="72" x2="55" y2="84" stroke="#34495e" stroke-width="1.5"/>
+                <line x1="49" y1="78" x2="61" y2="78" stroke="#34495e" stroke-width="1.5"/>
+            </g>
+        </svg>
+    </div>
+
+    <script>
+        let currentAnimation = null;
+
+        function animateCar(carType) {
+            // Kill current animation if running
+            if (currentAnimation) {
+                currentAnimation.pause();
+            }
+
+            // Hide all cars
+            document.querySelectorAll('.car-container').forEach(c => c.style.display = 'none');
+
+            // Show selected car
+            const carContainer = document.getElementById(carType);
+            carContainer.style.display = 'block';
+
+            // Reset position
+            carContainer.style.left = '100%';
+
+            // Calculate screen width
+            const screenWidth = window.innerWidth;
+            const carWidth = carContainer.offsetWidth;
+            const centerPosition = (screenWidth / 2) - (carWidth / 2);
+
+            // Create timeline
+            const timeline = anime.timeline({
+                easing: 'linear',
+                complete: function() {
+                    currentAnimation = null;
+                }
+            });
+
+            // Drive in from right
+            timeline.add({
+                targets: carContainer,
+                left: [screenWidth, centerPosition],
+                duration: 2000,
+                easing: 'easeInOutQuad'
+            });
+
+            // Stay in center (pause)
+            timeline.add({
+                targets: carContainer,
+                left: centerPosition,
+                duration: 4000
+            });
+
+            // Drive out to left
+            timeline.add({
+                targets: carContainer,
+                left: [centerPosition, -carWidth],
+                duration: 2000,
+                easing: 'easeInOutQuad'
+            });
+
+            // Animate wheels continuously
+            anime({
+                targets: `#${carType}-wheel-front, #${carType}-wheel-rear`,
+                rotate: 360,
+                duration: 1000,
+                loop: true,
+                easing: 'linear'
+            });
+
+            currentAnimation = timeline;
+        }
+
+        // Auto-start with sedan
+        window.addEventListener('load', () => {
+            setTimeout(() => animateCar('sedan'), 500);
+        });
+    </script>
+</body>
+</html>

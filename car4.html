@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animated Cars Gallery</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+        }
+
+        .card-preview {
+            height: 200px;
+            background: linear-gradient(to bottom, #87CEEB 0%, #E0F6FF 50%, #90EE90 50%, #90EE90 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-preview.ascii-style {
+            background: #1a1a1a;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+        }
+
+        .card-preview svg {
+            width: 120px;
+            height: auto;
+        }
+
+        .card-preview pre {
+            font-size: 10px;
+            line-height: 1;
+            text-shadow: 0 0 5px #00ff00;
+        }
+
+        .mini-road {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 50px;
+            background: #666;
+            border-top: 2px solid white;
+        }
+
+        .card-content {
+            padding: 20px;
+        }
+
+        .card-title {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .card-description {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .card-features {
+            list-style: none;
+            margin-bottom: 15px;
+        }
+
+        .card-features li {
+            padding: 5px 0;
+            color: #555;
+            font-size: 0.9em;
+        }
+
+        .card-features li:before {
+            content: "✓ ";
+            color: #667eea;
+            font-weight: bold;
+            margin-right: 5px;
+        }
+
+        .btn {
+            display: inline-block;
+            width: 100%;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            margin-top: 40px;
+            padding: 20px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 10px;
+        }
+
+        .tech-stack {
+            margin-top: 20px;
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2em;
+            }
+
+            .gallery {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+        }
+
+        /* Animation previews */
+        @keyframes drive {
+            0% { transform: translateX(-150px); }
+            50% { transform: translateX(150px); }
+            100% { transform: translateX(-150px); }
+        }
+
+        .preview-animate {
+            animation: drive 6s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚗 Animated Car Silhouettes Gallery</h1>
+            <p class="subtitle">Explore different animation techniques with SVG, CSS, and ASCII art</p>
+        </header>
+
+        <div class="gallery">
+            <!-- Card 1: Basic SVG Animation -->
+            <div class="card" onclick="window.location.href='car1.html'">
+                <div class="card-preview">
+                    <svg class="preview-animate" viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg">
+                        <g id="car-body">
+                            <path d="M 30 70 L 25 60 L 30 50 L 55 45 L 75 40 L 105 40 L 125 45 L 145 50 L 170 60 L 175 70 Z"
+                                  fill="#2c3e50" stroke="#1a252f" stroke-width="1.5"/>
+                            <path d="M 60 45 L 70 42 L 95 42 L 95 50 L 60 50 Z" fill="#4a90e2" opacity="0.7"/>
+                            <path d="M 100 42 L 120 45 L 140 50 L 100 50 Z" fill="#4a90e2" opacity="0.7"/>
+                        </g>
+                        <g>
+                            <circle cx="140" cy="75" r="12" fill="#1a252f"/>
+                            <circle cx="140" cy="75" r="6" fill="#7f8c8d"/>
+                        </g>
+                        <g>
+                            <circle cx="50" cy="75" r="12" fill="#1a252f"/>
+                            <circle cx="50" cy="75" r="6" fill="#7f8c8d"/>
+                        </g>
+                    </svg>
+                    <div class="mini-road"></div>
+                </div>
+                <div class="card-content">
+                    <h2 class="card-title">SVG Car Silhouettes</h2>
+                    <p class="card-description">
+                        Multiple car types with spinning wheels animation
+                    </p>
+                    <ul class="card-features">
+                        <li>4 different car types (Sedan, SUV, MPV, Wagon)</li>
+                        <li>Spinning wheel animations</li>
+                        <li>Drive in, pause, drive out sequence</li>
+                        <li>Responsive design</li>
+                    </ul>
+                    <a href="car1.html" class="btn">View Animation →</a>
+                </div>
+            </div>
+
+            <!-- Card 2: Parallax -->
+            <div class="card" onclick="window.location.href='car2.html'">
+                <div class="card-preview">
+                    <svg viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg">
+                        <g id="car-body">
+                            <path d="M 30 75 L 28 65 L 32 50 L 50 40 L 80 35 L 120 35 L 150 40 L 168 50 L 172 65 L 170 75 Z"
+                                  fill="#34495e" stroke="#1a252f" stroke-width="2"/>
+                            <rect x="45" y="38" width="110" height="12" fill="#2c3e50" stroke="#1a252f" stroke-width="1.5"/>
+                            <rect x="55" y="40" width="35" height="10" fill="#4a90e2" opacity="0.7"/>
+                        </g>
+                        <g>
+                            <circle cx="145" cy="82" r="14" fill="#1a252f"/>
+                            <circle cx="145" cy="82" r="7" fill="#7f8c8d"/>
+                        </g>
+                        <g>
+                            <circle cx="50" cy="82" r="14" fill="#1a252f"/>
+                            <circle cx="50" cy="82" r="7" fill="#7f8c8d"/>
+                        </g>
+                    </svg>
+                    <div class="mini-road"></div>
+                </div>
+                <div class="card-content">
+                    <h2 class="card-title">Parallax View</h2>
+                    <p class="card-description">
+                        Car stays centered while scenery moves - following the car effect
+                    </p>
+                    <ul class="card-features">
+                        <li>Fixed car position with moving background</li>
+                        <li>Trees, signs, water tower, windmill</li>
+                        <li>Multi-layer parallax effect</li>
+                        <li>Rotating windmill blades</li>
+                    </ul>
+                    <a href="car2.html" class="btn">View Animation →</a>
+                </div>
+            </div>
+
+            <!-- Card 3: ASCII Art -->
+            <div class="card" onclick="window.location.href='car3.html'">
+                <div class="card-preview ascii-style">
+                    <pre>    ____
+  /|_||_\\
+ (   _   )
+ -OO---OO-</pre>
+                </div>
+                <div class="card-content">
+                    <h2 class="card-title">ASCII Art Animation</h2>
+                    <p class="card-description">
+                        Retro terminal-style animation with ASCII characters
+                    </p>
+                    <ul class="card-features">
+                        <li>Pure ASCII art cars and scenery</li>
+                        <li>Animated wheels with character rotation</li>
+                        <li>Hybrid mode with SVG overlay effects</li>
+                        <li>FPS counter and performance monitoring</li>
+                    </ul>
+                    <a href="car3.html" class="btn">View Animation →</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <h3>About This Project</h3>
+            <p>
+                These animations demonstrate different techniques for creating engaging web animations
+                using pure JavaScript and modern browser APIs. All animations are responsive and
+                optimized for both desktop and mobile devices.
+            </p>
+            <div class="tech-stack">
+                <strong>Technologies Used:</strong> Vanilla JavaScript, Anime.js, SVG, CSS3 Animations, ASCII Art
+            </div>
+            <div style="margin-top: 15px;">
+                <strong>Features:</strong> Mobile-first design, Hardware-accelerated animations,
+                No external dependencies (except Anime.js), Pure vanilla JavaScript
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Add click tracking
+        document.querySelectorAll('.card').forEach(card => {
+            card.addEventListener('click', function(e) {
+                if (e.target.tagName !== 'A') {
+                    const link = this.querySelector('.btn');
+                    if (link) {
+                        window.location.href = link.href;
+                    }
+                }
+            });
+        });
+
+        // Add wheel spin animation to previews
+        const style = document.createElement('style');
+        style.textContent = `
+            .card-preview svg g:last-child circle,
+            .card-preview svg g:nth-last-child(1) circle {
+                animation: spin 2s linear infinite;
+                transform-origin: center;
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

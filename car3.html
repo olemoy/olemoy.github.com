@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASCII Car Animation</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            background: #1a1a1a;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .controls {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            text-align: center;
+            border-bottom: 2px solid #00ff00;
+            z-index: 100;
+        }
+
+        .controls h2 {
+            color: #00ff00;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .controls button {
+            margin: 5px;
+            padding: 8px 16px;
+            background: #000;
+            color: #00ff00;
+            border: 2px solid #00ff00;
+            font-family: 'Courier New', monospace;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+
+        .controls button:hover {
+            background: #00ff00;
+            color: #000;
+        }
+
+        .controls button.active {
+            background: #00ff00;
+            color: #000;
+        }
+
+        .scene {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .ascii-layer {
+            position: absolute;
+            width: 100%;
+            white-space: nowrap;
+            font-size: 12px;
+            line-height: 1.2;
+        }
+
+        @media (max-width: 768px) {
+            .ascii-layer {
+                font-size: 8px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .ascii-layer {
+                font-size: 6px;
+            }
+        }
+
+        .sky {
+            top: 10%;
+        }
+
+        .ground {
+            bottom: 30%;
+        }
+
+        .road {
+            bottom: 20%;
+            font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .road {
+                font-size: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .road {
+                font-size: 8px;
+            }
+        }
+
+        .car-container {
+            position: absolute;
+            bottom: 22%;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 50;
+            white-space: pre;
+            font-size: 14px;
+            line-height: 1;
+            text-shadow: 0 0 5px #00ff00;
+        }
+
+        @media (max-width: 768px) {
+            .car-container {
+                font-size: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .car-container {
+                font-size: 7px;
+            }
+        }
+
+        .ascii-object {
+            position: absolute;
+            white-space: pre;
+            line-height: 1;
+        }
+
+        /* Hybrid mode - SVG overlay */
+        .hybrid-mode {
+            background: linear-gradient(to bottom, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+        }
+
+        .hybrid-mode .controls {
+            border-bottom-color: #00d9ff;
+        }
+
+        .hybrid-mode .controls h2,
+        .hybrid-mode .controls button {
+            color: #00d9ff;
+            border-color: #00d9ff;
+        }
+
+        .hybrid-mode .controls button:hover,
+        .hybrid-mode .controls button.active {
+            background: #00d9ff;
+            color: #000;
+        }
+
+        .hybrid-mode .ascii-layer,
+        .hybrid-mode .car-container {
+            color: #00d9ff;
+            text-shadow: 0 0 5px #00d9ff;
+        }
+
+        .status {
+            position: absolute;
+            top: 80px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px;
+            border: 1px solid #00ff00;
+            font-size: 12px;
+            z-index: 100;
+        }
+
+        .hybrid-mode .status {
+            border-color: #00d9ff;
+            color: #00d9ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <h2>ASCII CAR ANIMATION</h2>
+        <button onclick="startAnimation('sedan', false)" id="btn-sedan">Sedan (ASCII)</button>
+        <button onclick="startAnimation('suv', false)" id="btn-suv">SUV (ASCII)</button>
+        <button onclick="startAnimation('sedan', true)" id="btn-hybrid">Hybrid Mode</button>
+        <button onclick="stopAnimation()">Stop</button>
+    </div>
+
+    <div class="status">
+        <div>Mode: <span id="mode-text">Stopped</span></div>
+        <div>FPS: <span id="fps">--</span></div>
+    </div>
+
+    <div class="scene" id="scene">
+        <!-- Sky layer with clouds -->
+        <div class="ascii-layer sky" id="sky-layer"></div>
+
+        <!-- Ground layer with objects -->
+        <div class="ascii-layer ground" id="ground-layer"></div>
+
+        <!-- Road -->
+        <div class="ascii-layer road" id="road-layer"></div>
+
+        <!-- Car -->
+        <div class="car-container" id="car"></div>
+    </div>
+
+    <script>
+        const cars = {
+            sedan: `    ____
+  /|_||_\\
+ (   _   )
+ -OO---OO-`,
+
+            suv: `     ______
+   /|______|\\
+  | [] [] [] |
+  |  ______  |
+ -OO------OO-`,
+
+            sports: `   ___
+ _/  /\\
+[____|_\\
+ O    O`,
+
+            truck: `     _______
+   ||  ___  ||
+   || |___| ||
+   ||_______||
+  -OO-----OO-`,
+        };
+
+        const scenery = {
+            tree: ` /\\
+//\\\\
+|||
+|||`,
+
+            treeSmall: ` ^
+/|\\
+ |`,
+
+            sign: `|---|
+| 50|
+|---|
+  |
+  |`,
+
+            bush: `/^^^\\
+\\___/`,
+
+            cloud: `  ___
+ (   )
+(_____)`,
+
+            cloudSmall: ` ___
+(   )`,
+
+            house: `  /\\
+ /  \\
+/____\\
+|[][]|
+|[][]|`,
+
+            windmill: `  X
+ X+X
+  X
+  |
+ /|\\`,
+        };
+
+        let animations = [];
+        let frameCount = 0;
+        let lastTime = Date.now();
+        let isRunning = false;
+        let isHybrid = false;
+
+        function updateFPS() {
+            frameCount++;
+            const now = Date.now();
+            if (now - lastTime >= 1000) {
+                document.getElementById('fps').textContent = frameCount;
+                frameCount = 0;
+                lastTime = now;
+            }
+        }
+
+        function createRoadLine() {
+            const width = Math.floor(window.innerWidth / 8);
+            return '='.repeat(width) + '    ' + '='.repeat(width);
+        }
+
+        function populateScene() {
+            const skyLayer = document.getElementById('sky-layer');
+            const groundLayer = document.getElementById('ground-layer');
+            const roadLayer = document.getElementById('road-layer');
+
+            skyLayer.innerHTML = '';
+            groundLayer.innerHTML = '';
+            roadLayer.textContent = createRoadLine();
+
+            // Add clouds
+            for (let i = 0; i < 4; i++) {
+                const cloud = document.createElement('div');
+                cloud.className = 'ascii-object';
+                cloud.style.left = `${window.innerWidth + i * 400}px`;
+                cloud.style.top = `${Math.random() * 50}px`;
+                cloud.textContent = i % 2 === 0 ? scenery.cloud : scenery.cloudSmall;
+                skyLayer.appendChild(cloud);
+            }
+
+            // Add ground objects
+            const objects = [
+                { art: scenery.tree, offset: 100 },
+                { art: scenery.bush, offset: 300 },
+                { art: scenery.treeSmall, offset: 450 },
+                { art: scenery.sign, offset: 600 },
+                { art: scenery.tree, offset: 850 },
+                { art: scenery.windmill, offset: 1100 },
+                { art: scenery.house, offset: 1400 },
+                { art: scenery.treeSmall, offset: 1650 },
+                { art: scenery.bush, offset: 1800 },
+                { art: scenery.tree, offset: 2000 },
+            ];
+
+            objects.forEach(obj => {
+                const elem = document.createElement('div');
+                elem.className = 'ascii-object';
+                elem.style.left = `${window.innerWidth + obj.offset}px`;
+                elem.style.bottom = '0';
+                elem.textContent = obj.art;
+                groundLayer.appendChild(elem);
+            });
+        }
+
+        function animateWheel(carText, frame) {
+            const wheels = ['O', '0', 'o', '°'];
+            const wheelChar = wheels[frame % wheels.length];
+            return carText.replace(/O/g, wheelChar);
+        }
+
+        function startAnimation(carType, hybrid = false) {
+            stopAnimation();
+
+            isRunning = true;
+            isHybrid = hybrid;
+            const scene = document.getElementById('scene');
+            const car = document.getElementById('car');
+
+            // Toggle hybrid mode styling
+            if (hybrid) {
+                scene.classList.add('hybrid-mode');
+                document.body.classList.add('hybrid-mode');
+                document.getElementById('mode-text').textContent = 'HYBRID';
+            } else {
+                scene.classList.remove('hybrid-mode');
+                document.body.classList.remove('hybrid-mode');
+                document.getElementById('mode-text').textContent = 'ASCII';
+            }
+
+            // Set initial car
+            car.textContent = cars[carType];
+
+            // Mark active button
+            document.querySelectorAll('.controls button').forEach(b => b.classList.remove('active'));
+            const btnId = hybrid ? 'btn-hybrid' : `btn-${carType}`;
+            document.getElementById(btnId).classList.add('active');
+
+            populateScene();
+
+            // Animate road
+            const roadLayer = document.getElementById('road-layer');
+            let roadOffset = 0;
+            const roadAnimation = setInterval(() => {
+                if (!isRunning) return;
+                roadOffset = (roadOffset + 2) % 8;
+                roadLayer.style.transform = `translateX(-${roadOffset}px)`;
+                updateFPS();
+            }, 50);
+            animations.push({ type: 'interval', ref: roadAnimation });
+
+            // Animate clouds (slow)
+            const clouds = document.querySelectorAll('.sky .ascii-object');
+            clouds.forEach((cloud, i) => {
+                animations.push(anime({
+                    targets: cloud,
+                    translateX: [0, -(window.innerWidth + 500)],
+                    duration: 15000 + (i * 2000),
+                    easing: 'linear',
+                    loop: true
+                }));
+            });
+
+            // Animate ground objects
+            const groundObjects = document.querySelectorAll('.ground .ascii-object');
+            groundObjects.forEach((obj, i) => {
+                animations.push(anime({
+                    targets: obj,
+                    translateX: [0, -(window.innerWidth + 300)],
+                    duration: 3000 + (i % 3) * 500,
+                    easing: 'linear',
+                    loop: true
+                }));
+            });
+
+            // Animate wheels
+            let wheelFrame = 0;
+            const wheelAnimation = setInterval(() => {
+                if (!isRunning) return;
+                wheelFrame++;
+                car.textContent = animateWheel(cars[carType], wheelFrame);
+            }, 100);
+            animations.push({ type: 'interval', ref: wheelAnimation });
+
+            // Add car bounce
+            animations.push(anime({
+                targets: car,
+                translateY: [0, -2, 0],
+                duration: 300,
+                easing: 'easeInOutSine',
+                loop: true
+            }));
+
+            // In hybrid mode, add SVG overlay effects
+            if (hybrid) {
+                addHybridEffects();
+            }
+        }
+
+        function addHybridEffects() {
+            // Create SVG overlay for enhanced effects
+            const scene = document.getElementById('scene');
+
+            // Add some SVG stars/particles
+            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.style.position = 'absolute';
+            svg.style.top = '0';
+            svg.style.left = '0';
+            svg.style.width = '100%';
+            svg.style.height = '100%';
+            svg.style.pointerEvents = 'none';
+            svg.style.zIndex = '60';
+
+            for (let i = 0; i < 20; i++) {
+                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                circle.setAttribute('cx', Math.random() * window.innerWidth);
+                circle.setAttribute('cy', Math.random() * window.innerHeight * 0.5);
+                circle.setAttribute('r', Math.random() * 2 + 1);
+                circle.setAttribute('fill', '#00d9ff');
+                circle.setAttribute('opacity', Math.random() * 0.5 + 0.3);
+                svg.appendChild(circle);
+
+                // Animate stars moving
+                animations.push(anime({
+                    targets: circle,
+                    translateX: [0, -(window.innerWidth + 100)],
+                    duration: 5000 + Math.random() * 5000,
+                    easing: 'linear',
+                    loop: true
+                }));
+            }
+
+            scene.appendChild(svg);
+        }
+
+        function stopAnimation() {
+            isRunning = false;
+            animations.forEach(anim => {
+                if (anim.type === 'interval') {
+                    clearInterval(anim.ref);
+                } else {
+                    anim.pause();
+                }
+            });
+            animations = [];
+
+            // Remove SVG overlays
+            document.querySelectorAll('.scene svg').forEach(svg => svg.remove());
+
+            document.getElementById('mode-text').textContent = 'Stopped';
+            document.querySelectorAll('.controls button').forEach(b => b.classList.remove('active'));
+        }
+
+        // Auto-start
+        window.addEventListener('load', () => {
+            setTimeout(() => startAnimation('sedan', false), 500);
+        });
+
+        // Handle resize
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                if (isRunning) {
+                    const activeBtn = document.querySelector('.controls button.active');
+                    if (activeBtn) {
+                        const id = activeBtn.id;
+                        if (id === 'btn-hybrid') {
+                            startAnimation('sedan', true);
+                        } else {
+                            const carType = id.replace('btn-', '');
+                            startAnimation(carType, false);
+                        }
+                    }
+                }
+            }, 250);
+        });
+    </script>
+</body>
+</html>

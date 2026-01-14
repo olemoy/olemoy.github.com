@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animated Car - Parallax View</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(to bottom, #87CEEB 0%, #E0F6FF 70%, #90EE90 70%, #90EE90 100%);
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+
+        .scene {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .sky-elements {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 70vh;
+            overflow: hidden;
+        }
+
+        .cloud {
+            position: absolute;
+            opacity: 0.7;
+        }
+
+        .ground {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 30vh;
+            background: #90EE90;
+            border-top: 3px solid #7CB342;
+        }
+
+        .road {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 12vh;
+            background: #666;
+            border-top: 4px solid white;
+        }
+
+        .road-line {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 200%;
+            height: 4px;
+            background: repeating-linear-gradient(
+                to right,
+                white 0,
+                white 40px,
+                transparent 40px,
+                transparent 80px
+            );
+        }
+
+        .background-objects {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+
+        .bg-object {
+            position: absolute;
+        }
+
+        .car-container {
+            position: absolute;
+            bottom: 8vh;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 50;
+        }
+
+        .car {
+            width: 180px;
+            height: auto;
+        }
+
+        @media (max-width: 640px) {
+            .car {
+                width: 130px;
+            }
+        }
+
+        .controls {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .controls button {
+            margin: 5px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background: #3b82f6;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        .controls button:hover {
+            background: #2563eb;
+        }
+
+        .controls button.active {
+            background: #16a34a;
+        }
+
+        h2 {
+            margin-bottom: 10px;
+            color: #333;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <h2>Parallax Car Animation</h2>
+        <button onclick="startJourney('sedan')" id="btn-sedan">Start Sedan</button>
+        <button onclick="startJourney('suv')" id="btn-suv">Start SUV</button>
+        <button onclick="stopJourney()">Stop</button>
+    </div>
+
+    <div class="scene">
+        <div class="sky-elements">
+            <!-- Clouds will be added dynamically -->
+        </div>
+
+        <div class="ground">
+            <div class="background-objects" id="bg-objects"></div>
+        </div>
+
+        <div class="road">
+            <div class="road-line" id="road-line"></div>
+        </div>
+
+        <div class="car-container">
+            <svg class="car" id="active-car" viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg">
+                <!-- Default: Sedan -->
+                <g id="car-body">
+                    <path d="M 30 70 L 25 60 L 30 50 L 55 45 L 75 40 L 105 40 L 125 45 L 145 50 L 170 60 L 175 70 Z"
+                          fill="#2c3e50" stroke="#1a252f" stroke-width="1.5"/>
+                    <path d="M 60 45 L 70 42 L 95 42 L 95 50 L 60 50 Z" fill="#4a90e2" opacity="0.7"/>
+                    <path d="M 100 42 L 120 45 L 140 50 L 100 50 Z" fill="#4a90e2" opacity="0.7"/>
+                    <ellipse cx="35" cy="70" rx="8" ry="3" fill="#c0392b"/>
+                    <ellipse cx="165" cy="70" rx="8" ry="3" fill="#f39c12"/>
+                </g>
+                <g id="wheel-front">
+                    <circle cx="140" cy="75" r="12" fill="#1a252f" stroke="#34495e" stroke-width="2"/>
+                    <circle cx="140" cy="75" r="6" fill="#7f8c8d"/>
+                    <line x1="140" y1="69" x2="140" y2="81" stroke="#34495e" stroke-width="1.5"/>
+                    <line x1="134" y1="75" x2="146" y2="75" stroke="#34495e" stroke-width="1.5"/>
+                </g>
+                <g id="wheel-rear">
+                    <circle cx="50" cy="75" r="12" fill="#1a252f" stroke="#34495e" stroke-width="2"/>
+                    <circle cx="50" cy="75" r="6" fill="#7f8c8d"/>
+                    <line x1="50" y1="69" x2="50" y2="81" stroke="#34495e" stroke-width="1.5"/>
+                    <line x1="44" y1="75" x2="56" y2="75" stroke="#34495e" stroke-width="1.5"/>
+                </g>
+            </svg>
+        </div>
+    </div>
+
+    <script>
+        const carSVGs = {
+            sedan: `
+                <g id="car-body">
+                    <path d="M 30 70 L 25 60 L 30 50 L 55 45 L 75 40 L 105 40 L 125 45 L 145 50 L 170 60 L 175 70 Z"
+                          fill="#2c3e50" stroke="#1a252f" stroke-width="1.5"/>
+                    <path d="M 60 45 L 70 42 L 95 42 L 95 50 L 60 50 Z" fill="#4a90e2" opacity="0.7"/>
+                    <path d="M 100 42 L 120 45 L 140 50 L 100 50 Z" fill="#4a90e2" opacity="0.7"/>
+                    <ellipse cx="35" cy="70" rx="8" ry="3" fill="#c0392b"/>
+                    <ellipse cx="165" cy="70" rx="8" ry="3" fill="#f39c12"/>
+                </g>
+                <g id="wheel-front">
+                    <circle cx="140" cy="75" r="12" fill="#1a252f" stroke="#34495e" stroke-width="2"/>
+                    <circle cx="140" cy="75" r="6" fill="#7f8c8d"/>
+                    <line x1="140" y1="69" x2="140" y2="81" stroke="#34495e" stroke-width="1.5"/>
+                    <line x1="134" y1="75" x2="146" y2="75" stroke="#34495e" stroke-width="1.5"/>
+                </g>
+                <g id="wheel-rear">
+                    <circle cx="50" cy="75" r="12" fill="#1a252f" stroke="#34495e" stroke-width="2"/>
+                    <circle cx="50" cy="75" r="6" fill="#7f8c8d"/>
+                    <line x1="50" y1="69" x2="50" y2="81" stroke="#34495e" stroke-width="1.5"/>
+                    <line x1="44" y1="75" x2="56" y2="75" stroke="#34495e" stroke-width="1.5"/>
+                </g>
+            `,
+            suv: `
+                <g id="car-body">
+                    <path d="M 30 75 L 28 65 L 32 50 L 50 40 L 80 35 L 120 35 L 150 40 L 168 50 L 172 65 L 170 75 Z"
+                          fill="#34495e" stroke="#1a252f" stroke-width="2"/>
+                    <rect x="45" y="38" width="110" height="12" fill="#2c3e50" stroke="#1a252f" stroke-width="1.5"/>
+                    <rect x="55" y="40" width="35" height="10" fill="#4a90e2" opacity="0.7"/>
+                    <rect x="110" y="40" width="35" height="10" fill="#4a90e2" opacity="0.7"/>
+                    <rect x="165" y="55" width="6" height="15" fill="#95a5a6" rx="1"/>
+                    <ellipse cx="35" cy="75" rx="8" ry="3" fill="#c0392b"/>
+                    <ellipse cx="165" cy="75" rx="8" ry="3" fill="#f39c12"/>
+                </g>
+                <g id="wheel-front">
+                    <circle cx="145" cy="82" r="14" fill="#1a252f" stroke="#34495e" stroke-width="2"/>
+                    <circle cx="145" cy="82" r="7" fill="#7f8c8d"/>
+                    <line x1="145" y1="75" x2="145" y2="89" stroke="#34495e" stroke-width="2"/>
+                    <line x1="138" y1="82" x2="152" y2="82" stroke="#34495e" stroke-width="2"/>
+                </g>
+                <g id="wheel-rear">
+                    <circle cx="50" cy="82" r="14" fill="#1a252f" stroke="#34495e" stroke-width="2"/>
+                    <circle cx="50" cy="82" r="7" fill="#7f8c8d"/>
+                    <line x1="50" y1="75" x2="50" y2="89" stroke="#34495e" stroke-width="2"/>
+                    <line x1="43" y1="82" x2="57" y2="82" stroke="#34495e" stroke-width="2"/>
+                </g>
+            `
+        };
+
+        let animations = [];
+        let wheelAnimation = null;
+        let isRunning = false;
+
+        function createTree(x, scale = 1) {
+            return `
+                <svg class="bg-object" style="left: ${x}px; bottom: 12vh;" width="${60 * scale}" height="${80 * scale}" viewBox="0 0 60 80">
+                    <rect x="25" y="50" width="10" height="30" fill="#8B4513"/>
+                    <circle cx="30" cy="40" r="20" fill="#228B22"/>
+                    <circle cx="20" cy="35" r="15" fill="#228B22"/>
+                    <circle cx="40" cy="35" r="15" fill="#228B22"/>
+                </svg>
+            `;
+        }
+
+        function createSign(x) {
+            return `
+                <svg class="bg-object" style="left: ${x}px; bottom: 12vh;" width="50" height="70" viewBox="0 0 50 70">
+                    <rect x="22" y="25" width="6" height="45" fill="#8B4513"/>
+                    <rect x="5" y="10" width="40" height="20" fill="#FFD700" stroke="#000" stroke-width="2" rx="2"/>
+                    <text x="25" y="23" font-size="10" text-anchor="middle" fill="#000" font-weight="bold">50</text>
+                </svg>
+            `;
+        }
+
+        function createWaterTower(x) {
+            return `
+                <svg class="bg-object" style="left: ${x}px; bottom: 12vh;" width="80" height="120" viewBox="0 0 80 120">
+                    <line x1="15" y1="50" x2="15" y2="120" stroke="#666" stroke-width="4"/>
+                    <line x1="65" y1="50" x2="65" y2="120" stroke="#666" stroke-width="4"/>
+                    <rect x="20" y="45" width="40" height="10" fill="#888"/>
+                    <ellipse cx="40" cy="30" rx="25" ry="20" fill="#4A90E2" stroke="#2C5F8D" stroke-width="2"/>
+                    <ellipse cx="40" cy="30" rx="25" ry="5" fill="#5BA3E8"/>
+                    <text x="40" y="34" font-size="8" text-anchor="middle" fill="#FFF" font-weight="bold">H₂O</text>
+                </svg>
+            `;
+        }
+
+        function createWindmill(x) {
+            return `
+                <svg class="bg-object" style="left: ${x}px; bottom: 12vh;" width="100" height="140" viewBox="0 0 100 140">
+                    <polygon points="45,40 55,40 52,140 48,140" fill="#E0E0E0" stroke="#999" stroke-width="1"/>
+                    <circle cx="50" cy="35" r="8" fill="#666"/>
+                    <g id="blade-${x}">
+                        <ellipse cx="50" cy="15" rx="6" ry="20" fill="#F5F5F5" stroke="#999" stroke-width="1"/>
+                        <ellipse cx="50" cy="55" rx="6" ry="20" fill="#F5F5F5" stroke="#999" stroke-width="1"/>
+                        <ellipse cx="30" cy="35" rx="20" ry="6" fill="#F5F5F5" stroke="#999" stroke-width="1"/>
+                        <ellipse cx="70" cy="35" rx="20" ry="6" fill="#F5F5F5" stroke="#999" stroke-width="1"/>
+                    </g>
+                </svg>
+            `;
+        }
+
+        function createCloud(x, y, scale = 1) {
+            return `
+                <svg class="cloud" style="left: ${x}px; top: ${y}px;" width="${80 * scale}" height="${40 * scale}" viewBox="0 0 80 40">
+                    <ellipse cx="20" cy="25" rx="15" ry="12" fill="white"/>
+                    <ellipse cx="35" cy="20" rx="18" ry="15" fill="white"/>
+                    <ellipse cx="50" cy="23" rx="16" ry="13" fill="white"/>
+                    <ellipse cx="60" cy="25" rx="12" ry="10" fill="white"/>
+                </svg>
+            `;
+        }
+
+        function createBush(x, scale = 1) {
+            return `
+                <svg class="bg-object" style="left: ${x}px; bottom: 12vh;" width="${40 * scale}" height="${30 * scale}" viewBox="0 0 40 30">
+                    <ellipse cx="10" cy="20" rx="10" ry="10" fill="#2D5016"/>
+                    <ellipse cx="20" cy="15" rx="12" ry="12" fill="#2D5016"/>
+                    <ellipse cx="30" cy="20" rx="10" ry="10" fill="#2D5016"/>
+                </svg>
+            `;
+        }
+
+        function populateScene() {
+            const bgContainer = document.getElementById('bg-objects');
+            const skyContainer = document.querySelector('.sky-elements');
+            const screenWidth = window.innerWidth;
+
+            bgContainer.innerHTML = '';
+            skyContainer.innerHTML = '';
+
+            // Create diverse background objects
+            const objects = [
+                { html: createTree(screenWidth + 100, 1.2), speed: 2 },
+                { html: createBush(screenWidth + 300, 1), speed: 2.5 },
+                { html: createSign(screenWidth + 500), speed: 2 },
+                { html: createTree(screenWidth + 700, 0.9), speed: 2 },
+                { html: createWaterTower(screenWidth + 1000), speed: 1.5 },
+                { html: createTree(screenWidth + 1300, 1.1), speed: 2 },
+                { html: createBush(screenWidth + 1500, 0.8), speed: 2.5 },
+                { html: createWindmill(screenWidth + 1800), speed: 1.5 },
+                { html: createTree(screenWidth + 2100, 1), speed: 2 },
+                { html: createBush(screenWidth + 2300, 1.2), speed: 2.5 },
+                { html: createSign(screenWidth + 2500), speed: 2 },
+                { html: createTree(screenWidth + 2800, 0.95), speed: 2 },
+            ];
+
+            objects.forEach(obj => {
+                bgContainer.innerHTML += obj.html;
+            });
+
+            // Add clouds
+            for (let i = 0; i < 5; i++) {
+                skyContainer.innerHTML += createCloud(
+                    screenWidth + (i * 400),
+                    Math.random() * 30 + 10,
+                    0.8 + Math.random() * 0.4
+                );
+            }
+        }
+
+        function startJourney(carType) {
+            // Stop existing animation
+            stopJourney();
+
+            // Update car SVG
+            const carSvg = document.getElementById('active-car');
+            carSvg.innerHTML = carSVGs[carType];
+
+            // Mark active button
+            document.querySelectorAll('.controls button').forEach(b => b.classList.remove('active'));
+            document.getElementById(`btn-${carType}`).classList.add('active');
+
+            isRunning = true;
+            populateScene();
+
+            // Animate road lines
+            const roadLine = document.getElementById('road-line');
+            animations.push(anime({
+                targets: roadLine,
+                translateX: [0, -80],
+                duration: 800,
+                easing: 'linear',
+                loop: true
+            }));
+
+            // Animate background objects
+            const bgObjects = document.querySelectorAll('#bg-objects .bg-object');
+            bgObjects.forEach((obj, index) => {
+                const speed = 2000 + (index % 3) * 500; // Vary speeds
+                animations.push(anime({
+                    targets: obj,
+                    translateX: [0, -(window.innerWidth + 200)],
+                    duration: speed,
+                    easing: 'linear',
+                    loop: true
+                }));
+
+                // Rotate windmill blades
+                if (obj.querySelector('[id^="blade-"]')) {
+                    const bladeId = obj.querySelector('[id^="blade-"]').id;
+                    animations.push(anime({
+                        targets: `#${bladeId}`,
+                        rotate: 360,
+                        duration: 2000,
+                        easing: 'linear',
+                        loop: true,
+                        transformOrigin: '50 35'
+                    }));
+                }
+            });
+
+            // Animate clouds (slower)
+            const clouds = document.querySelectorAll('.cloud');
+            clouds.forEach((cloud, index) => {
+                animations.push(anime({
+                    targets: cloud,
+                    translateX: [0, -(window.innerWidth + 100)],
+                    duration: 8000 + (index * 1000),
+                    easing: 'linear',
+                    loop: true
+                }));
+            });
+
+            // Animate wheels
+            wheelAnimation = anime({
+                targets: '#wheel-front, #wheel-rear',
+                rotate: 360,
+                duration: 800,
+                loop: true,
+                easing: 'linear'
+            });
+
+            // Add slight car bounce for realism
+            animations.push(anime({
+                targets: '.car-container',
+                translateY: [0, -3, 0],
+                duration: 400,
+                easing: 'easeInOutSine',
+                loop: true
+            }));
+        }
+
+        function stopJourney() {
+            isRunning = false;
+            animations.forEach(anim => anim.pause());
+            if (wheelAnimation) wheelAnimation.pause();
+            animations = [];
+
+            document.querySelectorAll('.controls button').forEach(b => b.classList.remove('active'));
+        }
+
+        // Auto-start
+        window.addEventListener('load', () => {
+            setTimeout(() => startJourney('sedan'), 500);
+        });
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            if (isRunning) {
+                const activeBtn = document.querySelector('.controls button.active');
+                if (activeBtn) {
+                    const carType = activeBtn.id.replace('btn-', '');
+                    startJourney(carType);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
